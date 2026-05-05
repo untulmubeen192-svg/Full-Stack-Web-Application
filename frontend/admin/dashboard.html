@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard | Glow Beauty</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ── Admin Layout ── */
+    body{display:flex;flex-direction:column;min-height:100vh}
+    .admin-layout{display:flex;flex:1}
+    .sidebar{width:240px;background:#1c1c1c;color:#fff;padding:24px 0;min-height:100vh;position:sticky;top:0;flex-shrink:0}
+    .sidebar .logo{color:#c86b85;font-size:1.1rem;font-weight:700;padding:0 20px 20px;border-bottom:1px solid #333;display:block}
+    .sidebar nav a{display:flex;align-items:center;gap:10px;padding:12px 20px;color:#ccc;text-decoration:none;font-size:.93rem;transition:.2s}
+    .sidebar nav a:hover,.sidebar nav a.active{background:#c86b85;color:#fff;border-radius:0}
+    .sidebar nav a i{width:16px;text-align:center}
+    .admin-main{flex:1;padding:28px;overflow-y:auto}
+    .admin-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
+    .admin-header h2{font-size:1.5rem}
+
+    /* ── Stat Cards ── */
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+    .stat-card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+    .stat-card .stat-val{font-size:2rem;font-weight:700;color:#c86b85}
+    .stat-card .stat-label{font-size:.85rem;color:#777;margin-top:4px}
+
+    /* ── Panels ── */
+    .panel{background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06);margin-bottom:24px}
+    .panel h3{margin-bottom:16px;font-size:1.1rem;border-bottom:1px solid #f0ecea;padding-bottom:10px}
+    .panel-hidden{display:none}
+
+    /* ── Tables ── */
+    table{width:100%;border-collapse:collapse;font-size:.9rem}
+    th,td{padding:10px 12px;border-bottom:1px solid #f5f3f1;text-align:left}
+    th{color:#888;font-weight:600;font-size:.82rem;text-transform:uppercase}
+    tr:hover td{background:#fdf8f7}
+    .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:.78rem;font-weight:600}
+    .badge-new{background:#fde8ec;color:#c86b85}
+    .badge-read{background:#e8f4fd;color:#4a90d9}
+    .badge-closed{background:#eee;color:#888}
+    .badge-active{background:#e8fde8;color:#2a8a3a}
+
+    /* ── Forms ── */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .form-grid.one-col{grid-template-columns:1fr}
+    .form-group{display:flex;flex-direction:column;gap:5px}
+    .form-group label{font-size:.83rem;color:#666;font-weight:600}
+    .form-group input,.form-group select,.form-group textarea{padding:9px 12px;border:1.5px solid #e2dcda;border-radius:8px;font-size:.9rem;outline:none;width:100%;transition:border .2s;font-family:inherit}
+    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#c86b85}
+    .form-group textarea{resize:vertical;min-height:90px}
+    .btn-sm{padding:7px 14px;font-size:.83rem;border:none;border-radius:7px;cursor:pointer;font-weight:600}
+    .btn-primary{background:#c86b85;color:#fff}
+    .btn-danger{background:#e55;color:#fff}
+    .btn-secondary{background:#f0ecea;color:#1c1c1c}
+    .form-msg{font-size:.88rem;margin-top:8px;min-height:18px}
+    .form-msg.ok{color:#2a8a3a} .form-msg.err{color:#e55}
+    .action-btns{display:flex;gap:6px}
+    img.thumb{width:50px;height:50px;object-fit:cover;border-radius:6px}
+    .page-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+    .page-tab{padding:8px 18px;border-radius:20px;cursor:pointer;font-size:.88rem;font-weight:600;background:#f0ecea;color:#777;border:none;transition:.2s}
+    .page-tab.active{background:#c86b85;color:#fff}
+  </style>
+</head>
+<body>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <span class="logo">🌸 Admin Panel</span>
+    <nav>
+      <a href="#" class="active" onclick="showPanel('overview')"><i class="fa-solid fa-chart-line"></i> Overview</a>
+      <a href="#" onclick="showPanel('products')"><i class="fa-solid fa-box"></i> Products</a>
+      <a href="#" onclick="showPanel('inquiries')"><i class="fa-solid fa-envelope"></i> Inquiries</a>
+      <a href="#" onclick="showPanel('banners')"><i class="fa-solid fa-image"></i> Banners</a>
+      <a href="#" onclick="showPanel('users')"><i class="fa-solid fa-users"></i> Users</a>
+      <a href="../index.html"><i class="fa-solid fa-globe"></i> View Site</a>
+      <a href="#" onclick="AuthAPI.logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-main">
+    <div class="admin-header">
+      <h2 id="panel-title">Dashboard Overview</h2>
+      <span id="admin-name" style="color:#888;font-size:.9rem"></span>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div id="panel-overview">
+      <div class="stat-grid" id="stat-grid">
+        <div class="stat-card"><div class="stat-val" id="s-products">—</div><div class="stat-label">Active Products</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-inquiries">—</div><div class="stat-label">Total Inquiries</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-new" style="color:#e55">—</div><div class="stat-label">New Inquiries</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-users">—</div><div class="stat-label">Registered Users</div></div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS PANEL -->
+    <div id="panel-products" class="panel-hidden">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="switchProductTab('list')">All Products</button>
+        <button class="page-tab"       onclick="switchProductTab('add')">+ Add Product</button>
+      </div>
+
+      <!-- Product List -->
+      <div id="ptab-list">
+        <table>
+          <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+          <tbody id="product-table-body"><tr><td colspan="6" style="text-align:center;color:#aaa">Loading…</td></tr></tbody>
+        </table>
+      </div>
+
+      <!-- Add/Edit Product Form -->
+      <div id="ptab-add" class="panel-hidden">
+        <h3 id="product-form-title">Add New Product</h3>
+        <input type="hidden" id="edit-product-id">
+        <div class="form-grid">
+          <div class="form-group"><label>Product Name *</label><input id="p-name" placeholder="e.g. Matte Lipstick"></div>
+          <div class="form-group"><label>Price (PKR) *</label><input id="p-price" type="number" placeholder="2500"></div>
+          <div class="form-group"><label>Category *</label>
+            <select id="p-category">
+              <option value="Face">Face</option><option value="Eyes">Eyes</option>
+              <option value="Lips">Lips</option><option value="Skincare">Skincare</option><option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Stock Quantity</label><input id="p-stock" type="number" placeholder="50"></div>
+          <div class="form-group" style="grid-column:1/-1"><label>Description</label><textarea id="p-desc" placeholder="Product description…"></textarea></div>
+          <div class="form-group" style="grid-column:1/-1"><label>Images (up to 6)</label><input id="p-images" type="file" multiple accept="image/*"></div>
+          <div class="form-group"><label><input type="checkbox" id="p-featured"> Mark as Featured</label></div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px">
+          <button class="btn-sm btn-primary" onclick="saveProduct()">Save Product</button>
+          <button class="btn-sm btn-secondary" onclick="switchProductTab('list')">Cancel</button>
+        </div>
+        <p class="form-msg" id="product-msg"></p>
+      </div>
+    </div>
+
+    <!-- INQUIRIES PANEL -->
+    <div id="panel-inquiries" class="panel-hidden">
+      <div class="page-tabs">
+        <button class="page-tab active" onclick="loadInquiries()">All</button>
+        <button class="page-tab" onclick="loadInquiries('new')">New</button>
+        <button class="page-tab" onclick="loadInquiries('replied')">Replied</button>
+        <button class="page-tab" onclick="loadInquiries('closed')">Closed</button>
+      </div>
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Source</th><th>Product</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="inquiry-table-body"><tr><td colspan="7" style="text-align:center;color:#aaa">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- BANNERS PANEL -->
+    <div id="panel-banners" class="panel-hidden">
+      <div style="margin-bottom:20px">
+        <h3>Hero Banner</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Title *</label><input id="b-title" placeholder="Beauty made simple"></div>
+          <div class="form-group"><label>Subtitle</label><input id="b-subtitle" placeholder="Clean makeup essentials…"></div>
+          <div class="form-group"><label>CTA Button Text</label><input id="b-cta" placeholder="Shop Collection"></div>
+          <div class="form-group"><label>CTA Link</label><input id="b-link" placeholder="products.html"></div>
+          <div class="form-group" style="grid-column:1/-1"><label>Banner Image</label><input id="b-image" type="file" accept="image/*"></div>
+        </div>
+        <div style="margin-top:14px;display:flex;gap:10px">
+          <button class="btn-sm btn-primary" onclick="saveBanner()">Save Banner</button>
+        </div>
+        <p class="form-msg" id="banner-msg"></p>
+      </div>
+      <table>
+        <thead><tr><th>Title</th><th>Subtitle</th><th>CTA</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="banner-table-body"></tbody>
+      </table>
+    </div>
+
+    <!-- USERS PANEL -->
+    <div id="panel-users" class="panel-hidden">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Joined</th></tr></thead>
+        <tbody id="user-table-body"><tr><td colspan="4" style="text-align:center;color:#aaa">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<script src="../api.js"></script>
+<script>
+/* ── Guard ── */
+if (!Auth.isLoggedIn() || !Auth.isAdmin()) {
+  window.location.href = '../login.html';
+}
+document.getElementById('admin-name').textContent = Auth.getUser()?.name || 'Admin';
+
+/* ── Panel switching ── */
+const panels = ['overview','products','inquiries','banners','users'];
+function showPanel(name) {
+  panels.forEach(p => {
+    const el = document.getElementById('panel-' + p);
+    if (el) el.classList.toggle('panel-hidden', p !== name);
+  });
+  document.getElementById('panel-title').textContent = {
+    overview:'Dashboard Overview', products:'Product Management',
+    inquiries:'Customer Inquiries', banners:'Banner & Content', users:'Registered Users'
+  }[name] || name;
+  document.querySelectorAll('.sidebar nav a').forEach((a, i) => a.classList.remove('active'));
+  if (name === 'overview')   loadStats();
+  if (name === 'products')   loadProducts();
+  if (name === 'inquiries')  loadInquiries();
+  if (name === 'banners')    loadBanners();
+  if (name === 'users')      loadUsers();
+}
+
+/* ── Overview ── */
+async function loadStats() {
+  try {
+    const { stats } = await apiFetch('/admin/stats');
+    document.getElementById('s-products').textContent  = stats.products;
+    document.getElementById('s-inquiries').textContent = stats.inquiries;
+    document.getElementById('s-new').textContent       = stats.newInquiries;
+    document.getElementById('s-users').textContent     = stats.users;
+  } catch {}
+}
+loadStats();
+
+/* ── Products ── */
+function switchProductTab(tab) {
+  document.querySelectorAll('.page-tab').forEach((t,i)=>t.classList.toggle('active',(i===0&&tab==='list')||(i===1&&tab==='add')));
+  document.getElementById('ptab-list').classList.toggle('panel-hidden', tab !== 'list');
+  document.getElementById('ptab-add').classList.toggle('panel-hidden', tab !== 'add');
+  if (tab === 'add') {
+    document.getElementById('product-form-title').textContent = 'Add New Product';
+    document.getElementById('edit-product-id').value = '';
+    ['p-name','p-price','p-stock','p-desc'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('p-featured').checked = false;
+    document.getElementById('product-msg').textContent = '';
+  }
+}
+
+async function loadProducts() {
+  const tbody = document.getElementById('product-table-body');
+  tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa">Loading…</td></tr>';
+  try {
+    const { products } = await apiFetch('/products/admin/all');
+    if (!products.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#aaa">No products yet.</td></tr>'; return; }
+    tbody.innerHTML = products.map(p => `
+      <tr>
+        <td>${p.images[0] ? `<img class="thumb" src="http://localhost:5000/uploads/products/${p.images[0]}">` : '—'}</td>
+        <td>${p.name}</td>
+        <td>${p.category}</td>
+        <td>PKR ${p.price.toLocaleString()}</td>
+        <td>${p.stock}</td>
+        <td class="action-btns">
+          <button class="btn-sm btn-secondary" onclick='editProduct(${JSON.stringify(p)})'>Edit</button>
+          <button class="btn-sm btn-danger"    onclick="deleteProduct('${p._id}')">Del</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="6" style="color:#e55">${e.message}</td></tr>`; }
+}
+
+function editProduct(p) {
+  switchProductTab('add');
+  document.getElementById('product-form-title').textContent = 'Edit Product';
+  document.getElementById('edit-product-id').value = p._id;
+  document.getElementById('p-name').value     = p.name;
+  document.getElementById('p-price').value    = p.price;
+  document.getElementById('p-stock').value    = p.stock;
+  document.getElementById('p-desc').value     = p.description;
+  document.getElementById('p-category').value = p.category;
+  document.getElementById('p-featured').checked = p.featured;
+}
+
+async function saveProduct() {
+  const msg = document.getElementById('product-msg');
+  msg.className = 'form-msg';
+  const id = document.getElementById('edit-product-id').value;
+  const fd = new FormData();
+  fd.append('name',        document.getElementById('p-name').value);
+  fd.append('price',       document.getElementById('p-price').value);
+  fd.append('stock',       document.getElementById('p-stock').value || 0);
+  fd.append('description', document.getElementById('p-desc').value);
+  fd.append('category',    document.getElementById('p-category').value);
+  fd.append('featured',    document.getElementById('p-featured').checked);
+  const files = document.getElementById('p-images').files;
+  for (let f of files) fd.append('images', f);
+  try {
+    if (id) { await ProductsAPI.update(id, fd); msg.textContent = '✅ Product updated!'; }
+    else     { await ProductsAPI.create(fd);    msg.textContent = '✅ Product created!'; }
+    msg.className = 'form-msg ok';
+    setTimeout(() => { switchProductTab('list'); loadProducts(); }, 1000);
+  } catch(e) { msg.textContent = e.message; msg.className = 'form-msg err'; }
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Remove this product?')) return;
+  try { await ProductsAPI.delete(id); loadProducts(); }
+  catch(e) { alert(e.message); }
+}
+
+/* ── Inquiries ── */
+async function loadInquiries(status) {
+  const tbody = document.getElementById('inquiry-table-body');
+  tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa">Loading…</td></tr>';
+  try {
+    const qs = status ? `?status=${status}` : '';
+    const { inquiries } = await apiFetch(`/admin/../inquiries${qs}`);
+    if (!inquiries.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#aaa">No inquiries.</td></tr>'; return; }
+    tbody.innerHTML = inquiries.map(i => `
+      <tr>
+        <td>${i.name}</td>
+        <td>${i.email}</td>
+        <td>${i.source === 'whatsapp' ? '🟢 WhatsApp' : '📧 Form'}</td>
+        <td>${i.productName || '—'}</td>
+        <td><span class="badge badge-${i.status}">${i.status}</span></td>
+        <td>${new Date(i.createdAt).toLocaleDateString()}</td>
+        <td class="action-btns">
+          <button class="btn-sm btn-secondary" onclick="viewInquiry('${i._id}','${i.status}')">View</button>
+          <button class="btn-sm btn-danger"    onclick="deleteInquiry('${i._id}')">Del</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="7" style="color:#e55">${e.message}</td></tr>`; }
+}
+
+async function viewInquiry(id, status) {
+  const s = prompt(`Update status (new/read/replied/closed):`, status);
+  if (!s) return;
+  try { await apiFetch(`/inquiries/${id}`, { method:'PUT', body: JSON.stringify({ status: s }) }); loadInquiries(); }
+  catch(e) { alert(e.message); }
+}
+
+async function deleteInquiry(id) {
+  if (!confirm('Delete this inquiry?')) return;
+  try { await apiFetch(`/inquiries/${id}`, { method:'DELETE' }); loadInquiries(); }
+  catch(e) { alert(e.message); }
+}
+
+/* ── Banners ── */
+async function loadBanners() {
+  const tbody = document.getElementById('banner-table-body');
+  try {
+    const { banners } = await apiFetch('/admin/banners');
+    tbody.innerHTML = banners.map(b => `
+      <tr>
+        <td>${b.title}</td><td>${b.subtitle||'—'}</td><td>${b.ctaText}</td>
+        <td><span class="badge ${b.active?'badge-active':'badge-closed'}">${b.active?'Active':'Inactive'}</span></td>
+        <td class="action-btns">
+          <button class="btn-sm btn-danger" onclick="deleteBanner('${b._id}')">Delete</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:#aaa">No banners yet.</td></tr>';
+  } catch {}
+}
+
+async function saveBanner() {
+  const msg = document.getElementById('banner-msg');
+  const fd  = new FormData();
+  fd.append('title',    document.getElementById('b-title').value);
+  fd.append('subtitle', document.getElementById('b-subtitle').value);
+  fd.append('ctaText',  document.getElementById('b-cta').value || 'Shop Collection');
+  fd.append('ctaLink',  document.getElementById('b-link').value || 'products.html');
+  const file = document.getElementById('b-image').files[0];
+  if (file) fd.append('image', file);
+  const token = Auth.getToken();
+  try {
+    const res  = await fetch('http://localhost:5000/api/admin/banners', { method:'POST', headers:{ Authorization:`Bearer ${token}` }, body:fd });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message);
+    msg.textContent = '✅ Banner saved!'; msg.className = 'form-msg ok';
+    loadBanners();
+  } catch(e) { msg.textContent = e.message; msg.className = 'form-msg err'; }
+}
+
+async function deleteBanner(id) {
+  if (!confirm('Delete this banner?')) return;
+  try { await apiFetch(`/admin/banners/${id}`, { method:'DELETE' }); loadBanners(); }
+  catch(e) { alert(e.message); }
+}
+
+/* ── Users ── */
+async function loadUsers() {
+  const tbody = document.getElementById('user-table-body');
+  try {
+    const { users } = await apiFetch('/admin/users');
+    tbody.innerHTML = users.map(u => `
+      <tr>
+        <td>${u.name}</td><td>${u.email}</td>
+        <td>${u.phone||'—'}</td>
+        <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+      </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#aaa">No users yet.</td></tr>';
+  } catch(e) { tbody.innerHTML = `<tr><td colspan="4" style="color:#e55">${e.message}</td></tr>`; }
+}
+</script>
+</body>
+</html>

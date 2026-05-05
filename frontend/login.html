@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login | Glow Beauty</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .auth-section { min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .auth-box { background: #fff; border-radius: 16px; padding: 40px; max-width: 440px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,.08); }
+    .auth-box h2 { text-align: center; margin-bottom: 8px; color: #c86b85; }
+    .auth-tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 2px solid #f0ecea; }
+    .auth-tab { flex: 1; text-align: center; padding: 10px; cursor: pointer; font-weight: 600; color: #999; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: .2s; }
+    .auth-tab.active { color: #c86b85; border-bottom-color: #c86b85; }
+    .auth-form { display: none; flex-direction: column; gap: 16px; }
+    .auth-form.active { display: flex; }
+    .auth-form input { padding: 12px 16px; border: 1.5px solid #e2dcda; border-radius: 8px; font-size: .95rem; outline: none; transition: border .2s; width: 100%; }
+    .auth-form input:focus { border-color: #c86b85; }
+    .auth-form .btn { width: 100%; text-align: center; padding: 13px; font-size: 1rem; border: none; cursor: pointer; }
+    .auth-msg { text-align: center; font-size: .9rem; margin-top: 6px; }
+    .auth-msg a { color: #c86b85; text-decoration: none; }
+    .err-msg { color: #e55; font-size: .88rem; text-align: center; min-height: 20px; }
+    .ok-msg  { color: #4a9; font-size: .88rem; text-align: center; min-height: 20px; }
+  </style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="container nav-flex">
+    <h1 class="logo">Glow Reeba Beauty</h1>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="products.html">Products</a>
+      <a href="gallery.html">Gallery</a>
+      <a href="contact.html">Contact</a>
+      <a href="login.html" id="nav-login" class="active">Login</a>
+      <a href="#" id="nav-logout" style="display:none" onclick="AuthAPI.logout()">Logout</a>
+      <a href="admin/dashboard.html" id="nav-admin" style="display:none">Admin</a>
+    </nav>
+  </div>
+</header>
+
+<section class="auth-section">
+  <div class="auth-box">
+    <h2>Welcome Back 🌸</h2>
+    <div class="auth-tabs">
+      <div class="auth-tab active" onclick="switchTab('login')">Login</div>
+      <div class="auth-tab"       onclick="switchTab('signup')">Sign Up</div>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="auth-form active" id="form-login">
+      <p class="err-msg" id="login-err"></p>
+      <input type="email"    id="l-email"    placeholder="Email address" required>
+      <input type="password" id="l-password" placeholder="Password"      required>
+      <button class="btn" onclick="doLogin()">Login</button>
+      <p class="auth-msg"><a href="forgot-password.html">Forgot password?</a></p>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div class="auth-form" id="form-signup">
+      <p class="err-msg" id="signup-err"></p>
+      <input type="text"     id="s-name"     placeholder="Full name"     required>
+      <input type="email"    id="s-email"    placeholder="Email address" required>
+      <input type="tel"      id="s-phone"    placeholder="Phone (optional)">
+      <input type="password" id="s-password" placeholder="Password (min 6 chars)" required>
+      <button class="btn" onclick="doSignup()">Create Account</button>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div><h3>Glow Reeba Beauty</h3><p>Modern makeup essentials.</p></div>
+    <div><h4>Follow Us</h4><div class="socials">
+      <a href="#"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#"><i class="fa-brands fa-facebook"></i></a>
+      <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+    </div></div>
+    <div><h4>Project By</h4><p><strong>Reeba Manzoor</strong></p><p>Roll No: 25BSSW010</p></div>
+  </div>
+  <p class="copyright">© 2026 Glow Reeba Beauty. Academic Project.</p>
+</footer>
+
+<script src="api.js"></script>
+<script>
+  // Redirect if already logged in
+  if (Auth.isLoggedIn()) window.location.href = 'index.html';
+
+  function switchTab(tab) {
+    document.querySelectorAll('.auth-tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'signup'));
+    });
+    document.getElementById('form-login').classList.toggle('active', tab === 'login');
+    document.getElementById('form-signup').classList.toggle('active', tab === 'signup');
+  }
+
+  async function doLogin() {
+    const email    = document.getElementById('l-email').value.trim();
+    const password = document.getElementById('l-password').value;
+    const errEl    = document.getElementById('login-err');
+    errEl.textContent = '';
+    try {
+      await AuthAPI.login(email, password);
+      window.location.href = Auth.isAdmin() ? 'admin/dashboard.html' : 'index.html';
+    } catch (e) {
+      errEl.textContent = e.message;
+    }
+  }
+
+  async function doSignup() {
+    const name     = document.getElementById('s-name').value.trim();
+    const email    = document.getElementById('s-email').value.trim();
+    const phone    = document.getElementById('s-phone').value.trim();
+    const password = document.getElementById('s-password').value;
+    const errEl    = document.getElementById('signup-err');
+    errEl.textContent = '';
+    if (!name || !email || !password) return errEl.textContent = 'Please fill all required fields.';
+    if (password.length < 6) return errEl.textContent = 'Password must be at least 6 characters.';
+    try {
+      await AuthAPI.signup(name, email, phone, password);
+      window.location.href = 'index.html';
+    } catch (e) {
+      errEl.textContent = e.message;
+    }
+  }
+</script>
+</body>
+</html>

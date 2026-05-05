@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Contact | Glow Beauty</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .contact-section{padding:60px 20px}
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;max-width:900px;margin:0 auto}
+    @media(max-width:680px){.contact-grid{grid-template-columns:1fr}}
+    .contact-form-box{background:#fff;border-radius:16px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,.07)}
+    .contact-form-box h2{margin-bottom:20px;color:#c86b85}
+    .cf-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+    .cf-group label{font-size:.83rem;font-weight:600;color:#666}
+    .cf-group input,.cf-group textarea{padding:10px 14px;border:1.5px solid #e2dcda;border-radius:8px;font-size:.93rem;outline:none;width:100%;transition:border .2s;font-family:inherit}
+    .cf-group input:focus,.cf-group textarea:focus{border-color:#c86b85}
+    .cf-group textarea{resize:vertical;min-height:120px}
+    .cf-submit{width:100%;padding:12px;font-size:1rem;border:none;cursor:pointer;margin-top:4px}
+    .contact-info h2{margin-bottom:20px}
+    .info-item{display:flex;gap:14px;align-items:flex-start;margin-bottom:20px}
+    .info-icon{width:40px;height:40px;background:#fde8ec;border-radius:10px;display:flex;align-items:center;justify-content:center;color:#c86b85;flex-shrink:0}
+    .wa-btn{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600;margin-top:12px;transition:opacity .2s}
+    .wa-btn:hover{opacity:.88}
+    .form-msg{text-align:center;font-size:.9rem;margin-top:10px;min-height:18px}
+    .form-msg.ok{color:#2a8a3a}.form-msg.err{color:#e55}
+  </style>
+</head>
+<body>
+<header class="navbar">
+  <div class="container nav-flex">
+    <h1 class="logo">Glow Reeba Beauty</h1>
+    <nav class="nav-links">
+      <a href="index.html">Home</a><a href="about.html">About</a>
+      <a href="products.html">Products</a><a href="gallery.html">Gallery</a>
+      <a href="contact.html" class="active">Contact</a>
+      <a href="login.html" id="nav-login">Login</a>
+      <a href="#" id="nav-logout" style="display:none" onclick="AuthAPI.logout()">Logout</a>
+      <a href="admin/dashboard.html" id="nav-admin" style="display:none">Admin</a>
+    </nav>
+  </div>
+</header>
+
+<section class="contact-section">
+  <div class="contact-grid">
+    <div class="contact-form-box">
+      <h2>Send us a Message</h2>
+      <div class="cf-group"><label>Your Name *</label><input id="c-name" placeholder="Ayesha Khan" required></div>
+      <div class="cf-group"><label>Email *</label><input id="c-email" type="email" placeholder="ayesha@email.com" required></div>
+      <div class="cf-group"><label>Phone (optional)</label><input id="c-phone" type="tel" placeholder="+92 300 0000000"></div>
+      <div class="cf-group"><label>Message *</label><textarea id="c-message" placeholder="I'd like to enquire about…" required></textarea></div>
+      <button class="btn cf-submit" onclick="submitContact()">Send Message</button>
+      <p class="form-msg" id="contact-msg"></p>
+    </div>
+    <div class="contact-info">
+      <h2>Get in Touch</h2>
+      <div class="info-item">
+        <div class="info-icon"><i class="fa-solid fa-envelope"></i></div>
+        <div><strong>Email</strong><p>hello@glowreeba.com</p></div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon"><i class="fa-brands fa-whatsapp"></i></div>
+        <div><strong>WhatsApp</strong><p>+92 300 1234567</p></div>
+      </div>
+      <div class="info-item">
+        <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
+        <div><strong>Location</strong><p>Karachi, Pakistan</p></div>
+      </div>
+      <a id="wa-general-link" href="https://wa.me/923001234567" class="wa-btn" target="_blank">
+        <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer-grid">
+    <div><h3>Glow Reeba Beauty</h3><p>Modern makeup essentials designed for confidence and simplicity.</p></div>
+    <div><h4>Follow Us</h4><div class="socials">
+      <a href="#"><i class="fa-brands fa-instagram"></i></a>
+      <a href="#"><i class="fa-brands fa-facebook"></i></a>
+      <a href="#"><i class="fa-brands fa-tiktok"></i></a>
+    </div></div>
+    <div><h4>Project By</h4><p><strong>Reeba Manzoor</strong></p><p>Roll No: 25BSSW010</p></div>
+  </div>
+  <p class="copyright">© 2026 Glow Reeba Beauty. Academic Project.</p>
+</footer>
+
+<script src="api.js"></script>
+<script>
+  WhatsAppAPI.generalLink('Hi! I would like to get in touch with Glow Reeba Beauty.')
+    .then(link => { document.getElementById('wa-general-link').href = link; })
+    .catch(() => {});
+
+  async function submitContact() {
+    const name    = document.getElementById('c-name').value.trim();
+    const email   = document.getElementById('c-email').value.trim();
+    const phone   = document.getElementById('c-phone').value.trim();
+    const message = document.getElementById('c-message').value.trim();
+    const msg     = document.getElementById('contact-msg');
+    msg.className = 'form-msg';
+    if (!name || !email || !message) {
+      msg.textContent = 'Please fill in all required fields.'; msg.className = 'form-msg err'; return;
+    }
+    try {
+      await InquiryAPI.submit({ name, email, phone, message, source: 'form' });
+      msg.textContent = "✅ Message sent! We'll get back to you soon."; msg.className = 'form-msg ok';
+      ['c-name','c-email','c-phone','c-message'].forEach(id => document.getElementById(id).value = '');
+    } catch(e) { msg.textContent = e.message; msg.className = 'form-msg err'; }
+  }
+</script>
+</body>
+</html>
