@@ -1,7 +1,7 @@
 {
   "name": "glow-beauty-backend",
   "version": "1.0.0",
-  "description": "Backend for Glow Reeba Beauty website",
+  "description": "Backend for Glow Untul Mubeen Beauty website",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

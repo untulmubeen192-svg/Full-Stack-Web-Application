@@ -1,4 +1,4 @@
-# 🌸 Glow Reeba Beauty — Full-Stack Website
+# 🌸 Glow Untul Mubeen Beauty — Full-Stack Website
 
 An academic makeup/beauty e-commerce project with a complete Node.js/Express backend integrated into the existing HTML/CSS/JS frontend.
 
